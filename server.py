@@ -3,6 +3,8 @@ from uuid import uuid4
 
 from flask import Flask, render_template, request, redirect, url_for, abort, make_response
 
+NOT_FOUND_ERROR = 404
+
 app = Flask(__name__)
 
 
@@ -29,7 +31,7 @@ def post(user_id, signature, post_name):
         if request.cookies.get('user_id') == user_id:
             return render_template('form.html', signature=signature, header=post_name, body=body, button='Изменить')
         return render_template('form.html', signature=signature, header=post_name, body=body, disabled='readonly')
-    return abort(404)
+    return abort(NOT_FOUND_ERROR)
 
 
 def save_post(data_dict, user_id, old_post=None):
