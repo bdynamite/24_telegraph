@@ -29,16 +29,18 @@
     <div class="container">
       <form method="POST">
         <div class="form-group">
-          <input name="header" class="form-control" placeholder="Заголовок" autofocus/>
+          <input id="header" {{disabled}} name="header" class="form-control" placeholder="Заголовок" value="{{header}}" autofocus/>
         </div>
         <div class="form-group">
-          <input name="signature" class="form-control" placeholder="Подпись"/>
+          <input name="signature" {{disabled}} class="form-control" placeholder="Подпись" value="{{signature}}"/>
         </div>
         <div class="form-group">
-          <textarea name="body" class="form-control" rows="10" placeholder="Ваша история"></textarea>
+          <textarea name="body" {{disabled}} class="form-control" rows="10" placeholder="{{body}}"></textarea>
         </div>
         <div class="form-group">
-          <button class="btn btn-primary" type="submit">Опубликовать</button>
+          {% if not disabled %}
+          <button class="btn btn-primary" type="submit">{{button}}</button>
+          {% endif %}
         </div>
       </form>
     </div><!-- /.container -->
