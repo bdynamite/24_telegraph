@@ -10,7 +10,7 @@ app = Flask(__name__)
 def form():
     if request.method == 'POST':
         user_id = get_user_id(request.cookies)
-        save_post(request.form, user_id)
+        save_post(request.form, str(user_id))
         resp = make_response(redirect(url_for('post', signature=request.form['signature'],
                                               post_name=request.form['header'], user_id=user_id)))
         resp.set_cookie('user_id', str(user_id))
