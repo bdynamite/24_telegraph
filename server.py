@@ -1,5 +1,6 @@
 import os
 from uuid import uuid4
+import json
 
 from flask import Flask, render_template, request, redirect, url_for, abort, make_response
 
@@ -12,55 +13,53 @@ app = Flask(__name__)
 def form():
     if request.method == 'POST':
         user_id = get_user_id(request.cookies)
-        post_name = get_post_name(request.form, str(user_id))
-        resp = make_response(redirect(url_for('post', signature=request.form['signature'],
-                                              post_name=post_name, user_id=user_id)))
+        post_name = get_post_name()
+        save_post(request.form, user_id, post_name)
+        resp = make_response(redirect(url_for('post', post_name=post_name)))
         resp.set_cookie('user_id', str(user_id))
         return resp
     return render_template('form.html', body='Ваша история', button='Опубликовать')
 
 
-@app.route('/<user_id>/<signature>/<post_name>', methods=['GET', 'POST'])
-def post(user_id, signature, post_name):
+@app.route('/<post_name>', methods=['GET', 'POST'])
+def post(post_name):
     if request.method == 'POST':
-        post_name = get_post_name(request.form, str(user_id))
-        return redirect(url_for('post', signature=request.form['signature'],
-                                post_name=post_name, user_id=user_id))
-    body = get_post_body(signature, post_name, user_id)
-    if body:
-        if request.cookies.get('user_id') == user_id:
-            return render_template('form.html', signature=signature, header=post_name, body=body, button='Изменить')
-        return render_template('form.html', signature=signature, header=post_name, body=body, disabled='readonly')
+        save_post(request.form, get_user_id(request.cookies), post_name)
+        return redirect(url_for('post',post_name=post_name))
+    post_data = get_post(post_name)
+    if post_data:
+        if request.cookies.get('user_id') == post_data['user_id']:
+            return render_template('form.html', button='Изменить', **post_data['post'])
+        return render_template('form.html', disabled='readonly', **post_data['post'])
     return abort(NOT_FOUND_ERROR)
 
 
-def get_post_name(data_dict, user_id):
+def get_post_name():
+    posts_dir = os.path.join(os.getcwd(), 'posts')
+    return str(len(os.listdir(posts_dir)) + 1)
+
+
+def save_post(data_dict, user_id, post_name):
     header, signature, body = [data_dict[x] for x in 'header signature body'.split()]
-    post_dir = os.path.join(os.getcwd(), 'posts', user_id, signature)
-    check_dir(post_dir)
-    post_name = header
-    if os.path.exists('{}.txt'.format(os.path.join(post_dir, post_name))):
-        post_name += str(len(os.listdir(post_dir)) + 1)
-    save_post(post_dir, post_name, body)
-    return post_name
+    post_data = {
+        'user_id': str(user_id),
+        'post': {
+            'header': header,
+            'signature': signature,
+            'body': body
+        }
+
+    }
+    post_path = os.path.join(os.getcwd(), 'posts', '{}.json'.format(post_name))
+    with open(post_path, 'w', encoding='utf-8') as json_file:
+        json.dump(post_data, json_file)
 
 
-def save_post(post_dir, post_name, body):
-    post_path = os.path.join(post_dir, post_name)
-    with open('{}.txt'.format(post_path), 'w', encoding='utf-8') as post:
-        post.write(body)
-
-
-def check_dir(post_dir):
-    if not os.path.exists(post_dir):
-        os.makedirs(post_dir)
-
-
-def get_post_body(signature, header, user_id):
-    post_path = os.path.join(os.getcwd(), 'posts', user_id, signature, '{}.txt'.format(header))
+def get_post(post_name):
+    post_path = os.path.join(os.getcwd(), 'posts', '{}.json'.format(post_name))
     if os.path.exists(post_path):
-        with open(post_path, 'r', encoding='utf-8') as post:
-            return post.read()
+        with open(post_path, 'r', encoding='utf-8') as json_data:
+            return json.load(json_data)
     return None
 
 
