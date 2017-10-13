@@ -18,7 +18,7 @@ def form():
         resp = make_response(redirect(url_for('post', post_name=post_name)))
         resp.set_cookie('user_id', str(user_id))
         return resp
-    return render_template('form.html', body='Ваша история', button='Опубликовать')
+    return render_template('form.html', mode='new')
 
 
 @app.route('/<post_name>', methods=['GET', 'POST'])
@@ -29,8 +29,8 @@ def post(post_name):
     post_data = get_post(post_name)
     if post_data:
         if request.cookies.get('user_id') == post_data['user_id']:
-            return render_template('form.html', button='Изменить', **post_data['post'])
-        return render_template('form.html', disabled='readonly', **post_data['post'])
+            return render_template('form.html', mode='edit', **post_data['post'])
+        return render_template('form.html', mode='read', **post_data['post'])
     return abort(NOT_FOUND_ERROR)
 
 

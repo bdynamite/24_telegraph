@@ -29,23 +29,35 @@
     <div class="container">
       <form method="POST">
         <div class="form-group">
-          <input id="header" {{disabled}} name="header" class="form-control" placeholder="Заголовок" value="{{header}}" autofocus/>
+          {% if mode == 'read' %}
+          <p>Наименование: {{header}}</p>
+          {% else %}
+          <input id="header" name="header" class="form-control" placeholder="Заголовок" value="{{header}}" autofocus/>
+          {% endif %}
         </div>
         <div class="form-group">
-          <input name="signature" {{disabled}} class="form-control" placeholder="Подпись" value="{{signature}}"/>
+          {% if mode == 'read' %}
+          <p>Автор: {{signature}}</p>
+          {% else %}
+          <input name="signature" class="form-control" placeholder="Подпись" value="{{signature}}"/>
+          {% endif %}
         </div>
         <div class="form-group">
-          {% if disabled %}
+          {% if mode == 'read' %}
           <p>{{body}}</p>
           {% else %}
-          <textarea name="body" {{disabled}} class="form-control" rows="10" placeholder="{{body}}"></textarea>
+          <textarea name="body" class="form-control" rows="10" placeholder="Ваша история">{{body}}</textarea>
           {% endif %}
         </div>
+        {% if mode != 'read' %}
         <div class="form-group">
-          {% if not disabled %}
-          <button class="btn btn-primary" type="submit">{{button}}</button>
+          {% if mode == 'edit' %}
+          <button class="btn btn-primary" type="submit">Изменить</button>
+          {% else %}
+          <button class="btn btn-primary" type="submit">Опубликовать</button>
           {% endif %}
         </div>
+        {% endif %}
       </form>
     </div><!-- /.container -->
 
